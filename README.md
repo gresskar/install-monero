@@ -75,12 +75,12 @@ mkdir .\build\ ; cd .\build\
 & "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -G "Visual Studio 17 2022" -A x64
 ```
 
-This will generate the `~\source\repos\p2pool\build\p2pool.sln` file. Open it in Visual Studio and build.
+This will generate the `~\source\repos\p2pool\build\p2pool.sln` file. Open it in Visual Studio, change from Debug to Release and build.
 
 ### 3.3) Install p2pool (***as admin***):
 
 ```
-Copy-Item -Path "~\source\repos\p2pool\build\Debug\" -Destination "C:\Program Files\p2pool\" -Recurse
+Copy-Item -Path "~\source\repos\p2pool\build\Release\" -Destination "C:\Program Files\p2pool\" -Recurse
 ```
 
 ### 3.4) Open firewall (***as admin***):
