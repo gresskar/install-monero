@@ -75,7 +75,7 @@ mkdir .\build\ ; cd .\build\
 & "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" .. -G "Visual Studio 17 2022" -A x64
 ```
 
-This will generate the `~\source\repos\p2pool\build\p2pool.sln` file. Open it in Visual Studio and build.
+This will generate the `~\source\repos\p2pool\build\p2pool.sln` file. Open it in Visual Studio and build (Ctrl+Shift+B).
 
 ### 3.3) Install p2pool (***as admin***):
 
@@ -86,8 +86,8 @@ Copy-Item -Path "~\source\repos\p2pool\build\Release\" -Destination "C:\Program 
 ### 3.4) Open firewall (***as admin***):
 
 ```
-New-NetFirewallRule -DisplayName "p2pool (tcp)" -Direction Inbound -Action Allow -EdgeTraversalPolicy Allow -Protocol TCP -LocalPort 37888,37889 -Program "C:\Program Files\monero\monerod.exe"
-New-NetFirewallRule -DisplayName "p2pool (udp)" -Direction Inbound -Action Allow -EdgeTraversalPolicy Allow -Protocol UDP -LocalPort 37888,37889 -Program "C:\Program Files\monero\monerod.exe"
+New-NetFirewallRule -DisplayName "p2pool (tcp)" -Direction Inbound -Action Allow -EdgeTraversalPolicy Allow -Protocol TCP -LocalPort 37888,37889 -Program "C:\Program Files\p2pool\p2pool.exe"
+New-NetFirewallRule -DisplayName "p2pool (udp)" -Direction Inbound -Action Allow -EdgeTraversalPolicy Allow -Protocol UDP -LocalPort 37888,37889 -Program "C:\Program Files\p2pool\p2pool.exe"
 ```
 
 ### 3.5) Run p2pool:
@@ -110,7 +110,7 @@ $params = @{
 New-Service @params
 ```
 
-## 4) xmrig
+## 4) XMRig
 
 ### 4.1) Clone the xmrig repositories
 
@@ -118,7 +118,7 @@ Visual Studio -> Clone a repository -> https://github.com/SChernykh/xmrig.git
 
 Visual Studio -> Clone a repository -> https://github.com/xmrig/xmrig-deps.git
 
-### 4.2) Disable donation
+### 4.2) Disable donations
 
 Edit `~\source\repos\xmrig\src\donate.h` so it looks like this:
 
