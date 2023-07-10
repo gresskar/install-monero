@@ -44,7 +44,7 @@ New-Item -Path "D:\" -Name "Monero" -ItemType "directory"
 ### 2.5) Run monero:
 
 ```
-& "C:\Program Files\monero\monerod.exe" --data-dir "D:\Monero\" --zmq-pub=tcp://127.0.0.1:18083 --no-igd --disable-dns-checkpoints --enable-dns-blocklist
+& "C:\Program Files\monero\monerod.exe" --data-dir D:\Monero\ --zmq-pub=tcp://127.0.0.1:18083 --no-igd --disable-dns-checkpoints --enable-dns-blocklist
 ```
 
 ### (optional) 2.6) Create service
@@ -52,7 +52,7 @@ New-Item -Path "D:\" -Name "Monero" -ItemType "directory"
 ```
 $params = @{
   Name = "Monero"
-  BinaryPathName = "C:\Program Files\monero\monerod.exe --data-dir "D:\Monero\" --zmq-pub=tcp://127.0.0.1:18083 --no-igd --disable-dns-checkpoints --enable-dns-blocklist"
+  BinaryPathName = "C:\Program Files\monero\monerod.exe --data-dir D:\Monero\ --zmq-pub=tcp://127.0.0.1:18083 --no-igd --disable-dns-checkpoints --enable-dns-blocklist"
   DependsOn = "NetLogon"
   DisplayName = "Monero"
   StartupType = "Delayed"
@@ -101,7 +101,7 @@ New-NetFirewallRule -DisplayName "p2pool (udp)" -Direction Inbound -Action Allow
 ```
 $params = @{
   Name = "P2Pool"
-  BinaryPathName = "C:\Program Files\p2pool\p2pool.exe --host 127.0.0.1 --wallet YOUR_WALLET_ADDRESS" --mini --no-igd
+  BinaryPathName = "C:\Program Files\p2pool\p2pool.exe --host 127.0.0.1 --wallet YOUR_WALLET_ADDRESS --mini --no-igd"
   DependsOn = "NetLogon,Monero"
   DisplayName = "P2Pool"
   StartupType = "Delayed"
@@ -137,7 +137,7 @@ constexpr const int kMinimumDonateLevel = 0;
 ```
 cd ~\source\repos\xmrig\
 mkdir .\build\ ; cd .\build\
-& "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" .. -G "Visual Studio 17 2022" -A x64 -DWITH_CN_LITE=OFF -DWITH_CN_HEAVY=OFF -DWITH_CN_PICO=OFF -DWITH_CN_FEMTO=OFF -DWITH_RANDOMX=ON -DWITH_ARGON2=OFF -DWITH_KAWPOW=OFF -DWITH_GHOSTRIDER=OFF -DWITH_HWLOC=ON -DWITH_LIBCPUID=OFF -DWITH_HTTP=OFF -DWITH_TLS=OFF -DWITH_ASM=ON -DWITH_EMBEDDED_CONFIG=OFF -DWITH_OPENCL=OFF -DWITH_CUDA=OFF -DWITH_NVML=OFF -DWITH_MSR=ON -DWITH_ADL=OFF -DWITH_PROFILING=OFF -DWITH_SSE4_1=ON -DWITH_BENCHMARK=ON -DWITH_SECURE_JIT=OFF -DWITH_DMI=ON -DWITH_DEBUG_LOG=OFF -DHWLOC_DEBUG=OFF -DCMAKE_BUILD_TYPE=Release -DXMRIG_DEPS=~\source\repos\xmrig-deps\msvc2019\x64\
+& "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" .. -G "Visual Studio 17 2022" -A x64 -DWITH_CN_LITE=OFF -DWITH_CN_HEAVY=OFF -DWITH_CN_PICO=OFF -DWITH_CN_FEMTO=OFF -DWITH_RANDOMX=ON -DWITH_ARGON2=OFF -DWITH_KAWPOW=ON -DWITH_GHOSTRIDER=OFF -DWITH_HWLOC=ON -DWITH_LIBCPUID=OFF -DWITH_HTTP=OFF -DWITH_TLS=ON -DWITH_ASM=ON -DWITH_EMBEDDED_CONFIG=OFF -DWITH_OPENCL=ON -DWITH_CUDA=OFF -DWITH_NVML=OFF -DWITH_MSR=ON -DWITH_ADL=ON -DWITH_PROFILING=OFF -DWITH_SSE4_1=ON -DWITH_BENCHMARK=ON -DWITH_SECURE_JIT=OFF -DWITH_DMI=ON -DWITH_DEBUG_LOG=OFF -DHWLOC_DEBUG=OFF -DCMAKE_BUILD_TYPE=Release -DXMRIG_DEPS=~\source\repos\xmrig-deps\msvc2019\x64\
 & "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" --build . --config Release
 ```
 
@@ -150,23 +150,40 @@ Copy-Item -Path "~\source\repos\xmrig\build\Release\" -Destination "C:\Program F
 ### 4.5) Run xmrig:
 
 ```
+# CPU
 & "C:\Program Files\xmrig\xmrig.exe" -o 127.0.0.1:3333
+
+# AMD GPU
+& "C:\Program Files\xmrig\xmrig.exe" --url gulf.moneroocean.stream:20128 --algo kawpow --user YOUR_WALLET_ADDRESS --keepalive --tls --tls-protocols TLSv1.3 --no-cpu --opencl
 ```
 
 ### (optional) 4.6) Create service
 
 ```
+# CPU
 $params = @{
-  Name = "XMRig"
+  Name = "XMRig CPU"
   BinaryPathName = "C:\Program Files\xmrig\xmrig.exe -o 127.0.0.1:3333"
   DependsOn = "NetLogon,Monero,P2Pool"
-  DisplayName = "XMRig"
+  DisplayName = "XMRig CPU"
   StartupType = "Delayed"
-  Description = "XMRig"
+  Description = "XMRig CPU"
+}
+New-Service @params
+
+# AMD GPU
+$params = @{
+  Name = "XMRig AMD GPU"
+  BinaryPathName = "C:\Program Files\xmrig\xmrig.exe --url gulf.moneroocean.stream:20128 --algo kawpow --user YOUR_WALLET_ADDRESS --keepalive --tls --tls-protocols TLSv1.3 --no-cpu --opencl"
+  DependsOn = "NetLogon"
+  DisplayName = "XMRig AMD GPU"
+  StartupType = "Delayed"
+  Description = "XMRig AMD GPU"
 }
 New-Service @params
 ```
 
 You can track your progress here:
-- P2Pool Observer: [clear net](https://p2pool.observer/), [tor](http://p2pool2giz2r5cpqicajwoazjcxkfujxswtk3jolfk2ubilhrkqam2id.onion/)
-- P2Pool Observer (Mini): [clear net](https://mini.p2pool.observer/), [tor](http://p2pmin25k4ei5bp3l6bpyoap6ogevrc35c3hcfue7zfetjpbhhshxdqd.onion/)
+- P2Pool Observer: [clear net](https://p2pool.observer/miner/YOUR_WALLET_ADDRESS), [tor](http://p2pool2giz2r5cpqicajwoazjcxkfujxswtk3jolfk2ubilhrkqam2id.onion/miner/YOUR_WALLET_ADDRESS)
+- P2Pool Observer (Mini): [clear net](https://mini.p2pool.observer/miner/YOUR_WALLET_ADDRESS), [tor](http://p2pmin25k4ei5bp3l6bpyoap6ogevrc35c3hcfue7zfetjpbhhshxdqd.onion/miner/YOUR_WALLET_ADDRESS)
+- MoneroOcean: [clear net](https://moneroocean.stream/#/dashboard?addr=YOUR_WALLET_ADDRESS)
