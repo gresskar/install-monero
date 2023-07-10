@@ -93,7 +93,7 @@ New-NetFirewallRule -DisplayName "p2pool (udp)" -Direction Inbound -Action Allow
 ### 3.5) Run p2pool:
 
 ```
-& "C:\Program Files\p2pool\p2pool.exe" --host 127.0.0.1 --wallet YOUR_WALLET_ADDRESS
+& "C:\Program Files\p2pool\p2pool.exe" --host 127.0.0.1 --wallet YOUR_WALLET_ADDRESS --mini --no-igd
 ```
 
 ### (optional) 3.6) Create service
@@ -101,7 +101,7 @@ New-NetFirewallRule -DisplayName "p2pool (udp)" -Direction Inbound -Action Allow
 ```
 $params = @{
   Name = "P2Pool"
-  BinaryPathName = "C:\Program Files\p2pool\p2pool.exe --host 127.0.0.1 --wallet YOUR_WALLET_ADDRESS"
+  BinaryPathName = "C:\Program Files\p2pool\p2pool.exe --host 127.0.0.1 --wallet YOUR_WALLET_ADDRESS" --mini --no-igd
   DependsOn = "NetLogon,Monero"
   DisplayName = "P2Pool"
   StartupType = "Delayed"
