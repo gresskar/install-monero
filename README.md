@@ -41,24 +41,57 @@ New-NetFirewallRule -DisplayName "monerod (udp)" -Direction Inbound -Action Allo
 New-Item -Path "D:\" -Name "Monero" -ItemType "directory"
 ```
 
-### 2.5) Run monero:
+### 2.5) Create monero conf file:
+
+`D:\Monero\bitmonero.conf`:
 
 ```
-& "C:\Program Files\monero\monerod.exe" --data-dir D:\Monero\ --zmq-pub=tcp://127.0.0.1:18083 --no-igd --disable-dns-checkpoints --enable-dns-blocklist
+# Enable auto-updater
+check-updates=update
+
+# CPU threads
+max-concurrency=2
+
+# Blockchain
+data-dir=D:\Monero
+db-sync-mode=safe:sync:10000000bytes
+
+# DNS
+disable-dns-checkpoints=1
+enable-dns-blocklist=1
+
+# ZMQ
+zmq-rpc-bind-ip=127.0.0.1
+zmq-rpc-bind-port=18082
+zmq-pub=tcp://127.0.0.1:18083
+
+# P2P
+p2p-bind-ip=0.0.0.0
+p2p-bind-port=18080
+p2p-use-ipv6=1
+p2p-bind-ipv6-address=::
+p2p-bind-port-ipv6=18080
+
+# Peers
+out-peers=64
+in-peers=64
+limit-rate=8192
+max-connections-per-ip=1
+pad-transactions=1
+no-igd=1
+
+# RPC
+rpc-bind-ip=127.0.0.1
+rpc-bind-port=18081
+rpc-use-ipv6=1
+rpc-bind-ipv6-address=::1
+disable-rpc-ban=1
 ```
 
-### (optional) 2.6) Create service
+### 2.6) Run monero:
 
 ```
-$params = @{
-  Name = "Monero"
-  BinaryPathName = "C:\Program Files\monero\monerod.exe --data-dir D:\Monero\ --zmq-pub=tcp://127.0.0.1:18083 --no-igd --disable-dns-checkpoints --enable-dns-blocklist"
-  DependsOn = "NetLogon"
-  DisplayName = "Monero"
-  StartupType = "Delayed"
-  Description = "Monero"
-}
-New-Service @params
+& "C:\Program Files\monero\monerod.exe" --config-file D:\Monero\bitmonero.conf
 ```
 
 ## 3) P2Pool
@@ -85,29 +118,19 @@ Copy-Item -Path "~\source\repos\p2pool\build\Release\" -Destination "C:\Program 
 
 ### 3.4) Open firewall (***as admin***):
 
+*Only open stratum port 3333 if you want to mine remotely!*
+
 ```
-New-NetFirewallRule -DisplayName "p2pool (tcp)" -Direction Inbound -Action Allow -EdgeTraversalPolicy Allow -Protocol TCP -LocalPort 37888,37889 -Program "C:\Program Files\p2pool\p2pool.exe"
-New-NetFirewallRule -DisplayName "p2pool (udp)" -Direction Inbound -Action Allow -EdgeTraversalPolicy Allow -Protocol UDP -LocalPort 37888,37889 -Program "C:\Program Files\p2pool\p2pool.exe"
+New-NetFirewallRule -DisplayName "p2pool (tcp)" -Direction Inbound -Action Allow -EdgeTraversalPolicy Allow -Protocol TCP -LocalPort 3333,37888,37889 -Program "C:\Program Files\p2pool\p2pool.exe"
+New-NetFirewallRule -DisplayName "p2pool (udp)" -Direction Inbound -Action Allow -EdgeTraversalPolicy Allow -Protocol UDP -LocalPort 3333,37888,37889 -Program "C:\Program Files\p2pool\p2pool.exe"
 ```
 
 ### 3.5) Run p2pool:
 
-```
-& "C:\Program Files\p2pool\p2pool.exe" --host 127.0.0.1 --wallet YOUR_WALLET_ADDRESS --mini --no-igd
-```
-
-### (optional) 3.6) Create service
+*Only pass `--stratum 0.0.0.0:3333` if you want to mine remotely!*
 
 ```
-$params = @{
-  Name = "P2Pool"
-  BinaryPathName = "C:\Program Files\p2pool\p2pool.exe --host 127.0.0.1 --wallet YOUR_WALLET_ADDRESS --mini --no-igd"
-  DependsOn = "NetLogon,Monero"
-  DisplayName = "P2Pool"
-  StartupType = "Delayed"
-  Description = "P2Pool"
-}
-New-Service @params
+& "C:\Program Files\p2pool\p2pool.exe" --host 127.0.0.1 --rpc-port 18081 --zmq-port 18083 --p2p 0.0.0.0:37888 --stratum 127.0.0.1:3333,0.0.0.0:3333 --wallet YOUR_WALLET_ADDRESS --mini --no-igd
 ```
 
 ## 4) XMRig
@@ -147,40 +170,18 @@ mkdir .\build\ ; cd .\build\
 Copy-Item -Path "~\source\repos\xmrig\build\Release\" -Destination "C:\Program Files\xmrig\" -Recurse
 ```
 
-### 4.5) Run xmrig:
+### 4.5) Run xmrig
+
+#### 4.5.1) CPU:
 
 ```
-# CPU
 & "C:\Program Files\xmrig\xmrig.exe" -o 127.0.0.1:3333
+```
 
-# AMD GPU
+#### 4.5.2) AMD GPU:
+
+```
 & "C:\Program Files\xmrig\xmrig.exe" --url gulf.moneroocean.stream:20128 --algo kawpow --user YOUR_WALLET_ADDRESS --keepalive --tls --tls-protocols TLSv1.3 --no-cpu --opencl
-```
-
-### (optional) 4.6) Create service
-
-```
-# CPU
-$params = @{
-  Name = "XMRig CPU"
-  BinaryPathName = "C:\Program Files\xmrig\xmrig.exe -o 127.0.0.1:3333"
-  DependsOn = "NetLogon,Monero,P2Pool"
-  DisplayName = "XMRig CPU"
-  StartupType = "Delayed"
-  Description = "XMRig CPU"
-}
-New-Service @params
-
-# AMD GPU
-$params = @{
-  Name = "XMRig AMD GPU"
-  BinaryPathName = "C:\Program Files\xmrig\xmrig.exe --url gulf.moneroocean.stream:20128 --algo kawpow --user YOUR_WALLET_ADDRESS --keepalive --tls --tls-protocols TLSv1.3 --no-cpu --opencl"
-  DependsOn = "NetLogon"
-  DisplayName = "XMRig AMD GPU"
-  StartupType = "Delayed"
-  Description = "XMRig AMD GPU"
-}
-New-Service @params
 ```
 
 You can track your progress here:
