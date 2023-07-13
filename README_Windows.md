@@ -1,4 +1,4 @@
-# Monero stuff
+# Monero setup
 
 ## 1) Install Visual Studio
 
